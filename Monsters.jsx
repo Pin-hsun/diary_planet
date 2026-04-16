@@ -6,7 +6,27 @@ import {
   ScrollView,
   StyleSheet,
 } from 'react-native';
+import Svg, { Ellipse } from 'react-native-svg';
 import { getAttrStyle, attrToCat, GEM_COLORS, StaticGem } from './gem';
+
+// ─── Egg icon (for diaries with status "egg") ─────────────────────────────────
+
+export const EggIcon = ({ size = 24 }) => {
+  const w = size * (96 / 112);
+  return (
+    <Svg width={w} height={size} viewBox="0 0 96 112" fill="none">
+      <Ellipse cx={48} cy={62} rx={36} ry={44} fill="#B5D4F4" />
+      <Ellipse cx={48} cy={60} rx={34} ry={42} fill="#E6F1FB" />
+      <Ellipse cx={36} cy={46} rx={7} ry={9} fill="#B5D4F4" opacity={0.55} />
+      <Ellipse cx={59} cy={70} rx={5} ry={6} fill="#B5D4F4" opacity={0.45} />
+      <Ellipse cx={43} cy={79} rx={3.5} ry={4.5} fill="#B5D4F4" opacity={0.4} />
+      <Ellipse cx={33} cy={63} rx={2.5} ry={3.5} fill="#B5D4F4" opacity={0.35} />
+      <Ellipse cx={36} cy={44} rx={6} ry={8} fill="none" stroke="#85B7EB" strokeWidth={0.5} opacity={0.5} />
+      <Ellipse cx={48} cy={30} rx={12} ry={6} fill="#ffffff" opacity={0.45} />
+      <Ellipse cx={44} cy={28} rx={4} ry={2} fill="#ffffff" opacity={0.5} />
+    </Svg>
+  );
+};
 
 // ─── Depth & size helpers ─────────────────────────────────────────────────────
 

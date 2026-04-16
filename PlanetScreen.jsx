@@ -2,24 +2,21 @@ import React, { useEffect, useRef, useState, useCallback } from 'react';
 import {
   View,
   Text,
-  TouchableOpacity,
   Dimensions,
   StyleSheet,
   Pressable,
-  SafeAreaView,
   Platform,
   Image,
 } from 'react-native';
 import Svg, { Path, Defs, LinearGradient, Stop } from 'react-native-svg';
 import { GestureDetector, Gesture } from 'react-native-gesture-handler';
 import Animated, { useSharedValue, useAnimatedStyle } from 'react-native-reanimated';
-import CREATURE_DATA from './creatures.json';
 import EGG_DIARIES from './egg_diary.json';
 import EggDiaryPopup from './EggDiaryPopup';
 import PlanetMenu from './PlanetMenu';
 import MonsterManager from './MonsterManager';
-import { CreatureView, DiaryCard, depthFromY, scaleFromDepth } from './Monsters';
-import { attrToCat } from './gem';
+import EggManager from './EggManager';
+import { CreatureView, DiaryCard, EggIcon, depthFromY, scaleFromDepth } from './Monsters';
 
 const MIN_SCALE = 0.6;
 const MAX_SCALE = 2.5;
@@ -105,9 +102,9 @@ const EGGS = Array.from({ length: 1 }, (_, i) => ({
 
 // ─── Initial creature states ──────────────────────────────────────────────────
 
-function makeInitialStates() {
-  return CREATURE_DATA.map((d, i) => ({
-    id: d.id,
+function makeInitialStates(monsters) {
+  return monsters.map((m, i) => ({
+    id: m.creatureId,
     x: 30 + i * 56 + Math.random() * 20,
     y: Math.min(Y_TOP + 50 + i * 28, Y_BOT - 10),
     vx: (Math.random() - 0.5) * 0.4,
@@ -121,10 +118,81 @@ function makeInitialStates() {
 
 // ─── Ground ───────────────────────────────────────────────────────────────────
 
+// ─── Shooting star ────────────────────────────────────────────────────────────
+
+const ShootingStar = () => {
+  const stateRef = useRef({
+    active: false, sx: 0, sy: 0, ex: 0, ey: 0, len: 0,
+    progress: 0, startTs: 0, dur: 1000, nextSpawnAt: 0,
+  });
+  const [, force] = useState(0);
+  const rafRef = useRef(null);
+
+  useEffect(() => {
+    const spawn = () => {
+      const s = stateRef.current;
+      s.sx = -50 + Math.random() * (W * 0.7);
+      s.sy = Math.random() * (H * 0.30);
+      const angle = Math.PI * 0.10 + Math.random() * Math.PI * 0.18; // ~18-50°
+      const dist = 220 + Math.random() * 200;
+      s.ex = s.sx + Math.cos(angle) * dist;
+      s.ey = s.sy + Math.sin(angle) * dist;
+      s.len = 70 + Math.random() * 50;
+      s.dur = 700 + Math.random() * 600;
+      s.startTs = performance.now();
+      s.active = true;
+    };
+
+    const tick = () => {
+      const s = stateRef.current;
+      const now = performance.now();
+      if (s.active) {
+        s.progress = (now - s.startTs) / s.dur;
+        if (s.progress >= 1) {
+          s.active = false;
+          s.nextSpawnAt = now + 2500 + Math.random() * 5000;
+        }
+      } else if (now >= s.nextSpawnAt) {
+        spawn();
+      }
+      force(n => n + 1);
+      rafRef.current = requestAnimationFrame(tick);
+    };
+
+    stateRef.current.nextSpawnAt = performance.now() + 1500;
+    rafRef.current = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(rafRef.current);
+  }, []);
+
+  const s = stateRef.current;
+  if (!s.active) return null;
+
+  const x = s.sx + (s.ex - s.sx) * s.progress;
+  const y = s.sy + (s.ey - s.sy) * s.progress;
+  const angle = Math.atan2(s.ey - s.sy, s.ex - s.sx);
+  const opacity = s.progress < 0.2 ? s.progress / 0.2 : 1 - (s.progress - 0.2) / 0.8;
+  const midX = x - (s.len / 2) * Math.cos(angle);
+  const midY = y - (s.len / 2) * Math.sin(angle);
+  const h = 1.5;
+
+  return (
+    <View pointerEvents="none" style={{
+      position: 'absolute',
+      left: midX - s.len / 2,
+      top: midY - h / 2,
+      width: s.len,
+      height: h,
+      backgroundColor: 'white',
+      opacity,
+      transform: [{ rotate: `${angle}rad` }],
+    }} />
+  );
+};
+
 const Egg = React.memo(({ egg, onPress }) => {
   const scale = scaleFromDepth(depthFromY(egg.y, Y_TOP, Y_BOT));
-  const w = 16 * scale;
-  const h = 22 * scale;
+  const h = 28 * scale;
+  const w = h * (96 / 112);
   return (
     <Pressable
       onPress={onPress}
@@ -138,22 +206,7 @@ const Egg = React.memo(({ egg, onPress }) => {
         transform: [{ rotate: `${egg.rot}deg` }],
       }}
     >
-      <View style={{
-        width: w,
-        height: h,
-        backgroundColor: egg.color,
-        borderRadius: w,
-      }}>
-        <View style={{
-          position: 'absolute',
-          top: h * 0.18,
-          left: w * 0.25,
-          width: w * 0.28,
-          height: h * 0.18,
-          backgroundColor: 'rgba(255,255,255,0.4)',
-          borderRadius: w,
-        }} />
-      </View>
+      <EggIcon size={h} />
     </Pressable>
   );
 });
@@ -314,58 +367,19 @@ const SpriteCreature = ({
 };
 
 
-// ─── Bottom Nav ───────────────────────────────────────────────────────────────
-
-const BottomNav = ({ onWriteDiary }) => (
-  <View style={styles.bottomNav}>
-    <NavItem label="planet" active />
-    <NavItem label="explore" />
-    <TouchableOpacity style={styles.writeBtn} onPress={onWriteDiary}>
-      <Text style={{ color: 'white', fontSize: 18 }}>✎</Text>
-    </TouchableOpacity>
-    <NavItem label="profile" />
-    <NavItem label="bag" />
-  </View>
-);
-
-const NavItem = ({ label, active }) => (
-  <View style={styles.navItem}>
-    <View style={[styles.navIcon, active && styles.navIconActive]} />
-    <Text style={[styles.navLabel, active && styles.navLabelActive]}>{label}</Text>
-  </View>
-);
-
 // ─── Main Screen ──────────────────────────────────────────────────────────────
 
-export default function PlanetScreen() {
+export default function PlanetScreen({ monsters, setMonsters }) {
   const [selectedCreature, setSelectedCreature] = useState(null);
   const [selectedEgg, setSelectedEgg] = useState(null);
   const [menuKey, setMenuKey] = useState(null);
-  const [monsters, setMonsters] = useState(() =>
-    CREATURE_DATA.map((c, i) => ({
-      id: i + 1,
-      creatureId: c.id,
-      name: c.name,
-      cat: attrToCat(c.attr),
-      color: c.color,
-      torsoColor: c.torsoColor,
-      diary: c.diary,
-      mood: c.mood,
-      emotions: c.emotions,
-      gem: c.gem,
-      deployed: false,
-      seed: (i + 1) * 11 + 5,
-      starred: false,
-      addedAt: new Date(c.date),
-    }))
-  );
   const deployedCreatureIds = new Set(
     monsters.filter(m => m.deployed).map(m => m.creatureId)
   );
 
   // All creature positions in one shared ref so collision detection
   // can read and write every creature's position in the same frame.
-  const statesRef = useRef(makeInitialStates());
+  const statesRef = useRef(makeInitialStates(monsters));
   const [, forceRender] = useState(0);
 
   const animFrame = useRef(null);
@@ -467,8 +481,7 @@ export default function PlanetScreen() {
     : undefined;
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <Pressable style={styles.screen} onPress={handleClose} onWheel={handleWheel}>
+    <Pressable style={styles.screen} onPress={handleClose} onWheel={handleWheel}>
 
         <GestureDetector gesture={pinch}>
           <Animated.View style={[StyleSheet.absoluteFill, { overflow: 'visible' }, worldStyle]}>
@@ -481,6 +494,9 @@ export default function PlanetScreen() {
               }]} />
             ))}
 
+            {/* Shooting star */}
+            <ShootingStar />
+
             {/* Ground */}
             <Ground />
 
@@ -492,7 +508,7 @@ export default function PlanetScreen() {
               .filter(s => deployedCreatureIds.has(s.id))
               .sort((a, b) => a.y - b.y)
               .map((state) => {
-                const data = CREATURE_DATA.find(d => d.id === state.id);
+                const data = monsters.find(m => m.creatureId === state.id);
                 return (
                   <CreatureView
                     key={state.id}
@@ -555,31 +571,33 @@ export default function PlanetScreen() {
           </div>
         )}
 
-        {/* Bottom nav */}
-        <BottomNav onWriteDiary={() => { /* navigate to diary screen */ }} />
+        {/* Egg Manager */}
+        {menuKey === 'eggs' && (
+          <div
+            style={{
+              position: 'fixed', inset: 0,
+              background: 'rgba(0,0,0,0.55)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              zIndex: 1000, padding: '16px 12px',
+            }}
+            onClick={(e) => {
+              if (e.target === e.currentTarget) setMenuKey(null);
+            }}
+          >
+            <div onClick={(e) => e.stopPropagation()} style={{ maxHeight: '82vh', overflowY: 'auto', borderRadius: 16, width: '100%', maxWidth: 420 }}>
+              <EggManager onClose={() => setMenuKey(null)} />
+            </div>
+          </div>
+        )}
 
-      </Pressable>
-    </SafeAreaView>
+    </Pressable>
   );
 }
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: '#02030c' },
   screen: { flex: 1, backgroundColor: '#02030c', overflow: 'hidden' },
   star: { position: 'absolute', borderRadius: 99, backgroundColor: 'white' },
   groundWrap: { position: 'absolute', left: 0, right: 0 },
-  bottomNav: {
-    position: 'absolute', bottom: 0, left: 0, right: 0, height: 50,
-    backgroundColor: 'rgba(4,4,14,0.97)',
-    borderTopWidth: 0.5, borderTopColor: 'rgba(255,255,255,0.07)',
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-around', paddingHorizontal: 6,
-  },
-  navItem: { alignItems: 'center', gap: 2, paddingHorizontal: 8, paddingVertical: 4 },
-  navIcon: { width: 16, height: 16, borderRadius: 4, backgroundColor: 'rgba(255,255,255,0.25)', opacity: 0.4 },
-  navIconActive: { backgroundColor: '#4a7fa8', borderRadius: 8, opacity: 1 },
-  navLabel: { fontSize: 7, color: 'rgba(255,255,255,0.35)' },
-  navLabelActive: { color: 'rgba(255,255,255,0.85)' },
-  writeBtn: { width: 34, height: 34, borderRadius: 17, backgroundColor: '#3a6fa0', alignItems: 'center', justifyContent: 'center' },
 });
