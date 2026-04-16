@@ -19,6 +19,7 @@ import EggDiaryPopup from './EggDiaryPopup';
 import PlanetMenu from './PlanetMenu';
 import MonsterManager from './MonsterManager';
 import { CreatureView, DiaryCard, depthFromY, scaleFromDepth } from './Monsters';
+import { attrToCat } from './gem';
 
 const MIN_SCALE = 0.6;
 const MAX_SCALE = 2.5;
@@ -345,10 +346,13 @@ export default function PlanetScreen() {
       id: i + 1,
       creatureId: c.id,
       name: c.name,
-      cat: c.attr.charAt(0),
+      cat: attrToCat(c.attr),
       color: c.color,
       torsoColor: c.torsoColor,
       diary: c.diary,
+      mood: c.mood,
+      emotions: c.emotions,
+      gem: c.gem,
       deployed: false,
       seed: (i + 1) * 11 + 5,
       starred: false,
@@ -515,7 +519,16 @@ export default function PlanetScreen() {
         />
 
         {/* Diary card */}
-        <DiaryCard creature={selectedCreature} onClose={handleClose} />
+        <DiaryCard
+          creature={selectedCreature}
+          onClose={handleClose}
+          onRecall={selectedCreature ? () => {
+            setMonsters(prev => prev.map(m =>
+              m.creatureId === selectedCreature.id ? { ...m, deployed: false } : m
+            ));
+            handleClose();
+          } : undefined}
+        />
         {selectedEgg && (
           <EggDiaryPopup
             egg={{ name: selectedEgg.title, diary: selectedEgg.diary }}

@@ -6,6 +6,7 @@ import {
   ScrollView,
   StyleSheet,
 } from 'react-native';
+import { getAttrStyle, attrToCat, GEM_COLORS, StaticGem } from './gem';
 
 // ─── Depth & size helpers ─────────────────────────────────────────────────────
 
@@ -154,28 +155,67 @@ export const StaticCreature = ({ color, torsoColor, size = 60 }) => {
 
 // ─── Diary Card ───────────────────────────────────────────────────────────────
 
-export const DiaryCard = ({ creature, onClose }) => {
+export const DiaryCard = ({ creature, onClose, onRecall }) => {
   if (!creature) return null;
+  const attrStyle = getAttrStyle(creature.attr);
+  const cat = attrToCat(creature.attr);
+  const gemCol = GEM_COLORS[cat] ?? GEM_COLORS.null;
   return (
     <View style={styles.diaryCard}>
       <Pressable style={styles.closeBtn} onPress={onClose}>
-        <Text style={{ color: 'rgba(255,255,255,0.5)', fontSize: 10 }}>✕</Text>
+        <Text style={{ color: 'rgba(255,255,255,0.6)', fontSize: 12 }}>✕</Text>
       </Pressable>
       <View style={styles.diaryHeader}>
         <View style={[styles.diaryAvatar, { backgroundColor: creature.color }]}>
-          <Text style={{ color: 'white', fontSize: 12, fontWeight: '500' }}>{creature.name[0]}</Text>
+          <Text style={{ color: 'white', fontSize: 16, fontWeight: '500' }}>{creature.name[0]}</Text>
         </View>
         <View style={{ flex: 1 }}>
           <Text style={styles.diaryName}>{creature.name}</Text>
           <Text style={styles.diaryDate}>{creature.date}</Text>
         </View>
-        <View style={[styles.attrBadge, { backgroundColor: creature.attrBg }]}>
-          <Text style={[styles.attrText, { color: creature.attrColor }]}>{creature.attr}</Text>
+        {creature.gem && (
+          <View style={styles.gemChip}>
+            <StaticGem cat={cat} size={30} />
+            <Text style={[styles.gemText, { color: gemCol.hi }]}>{creature.gem}</Text>
+          </View>
+        )}
+        <View style={[styles.attrBadge, { backgroundColor: attrStyle.bg }]}>
+          <Text style={[styles.attrText, { color: attrStyle.color }]}>{creature.attr}</Text>
         </View>
       </View>
-      <ScrollView style={{ maxHeight: 100 }} showsVerticalScrollIndicator={false}>
+
+      {(creature.mood != null || creature.emotions?.length) && (
+        <View style={styles.metaRow}>
+          {creature.mood != null && (
+            <View style={styles.moodWrap}>
+              <Text style={styles.metaLabel}>Mood</Text>
+              <View style={{ flexDirection: 'row' }}>
+                {[1, 2, 3, 4, 5].map((n) => (
+                  <View key={n} style={{
+                    width: 7, height: 7, borderRadius: 4, marginLeft: 3,
+                    backgroundColor: n <= creature.mood ? gemCol.mid : 'rgba(255,255,255,0.15)',
+                  }} />
+                ))}
+              </View>
+            </View>
+          )}
+          {creature.emotions?.map((em) => (
+            <View key={em} style={[styles.emoPill, { borderColor: gemCol.mid }]}>
+              <Text style={[styles.emoText, { color: gemCol.hi }]}>{em}</Text>
+            </View>
+          ))}
+        </View>
+      )}
+
+      <ScrollView style={{ maxHeight: 170 }} showsVerticalScrollIndicator={false}>
         <Text style={styles.diaryText}>{creature.diary}</Text>
       </ScrollView>
+
+      {onRecall && (
+        <Pressable style={styles.recallBtn} onPress={onRecall}>
+          <Text style={styles.recallText}>Recall</Text>
+        </Pressable>
+      )}
     </View>
   );
 };
@@ -185,25 +225,46 @@ export const DiaryCard = ({ creature, onClose }) => {
 const styles = StyleSheet.create({
   creatureAbs: { position: 'absolute', alignItems: 'center' },
   diaryCard: {
-    position: 'absolute', left: 12, right: 12, bottom: 162,
+    position: 'absolute', left: 12, right: 12, bottom: 70,
     backgroundColor: 'rgb(23, 23, 26)',
     borderWidth: 0.5, borderColor: 'rgba(255,255,255,0.12)',
-    borderRadius: 16, padding: 13, zIndex: 9999,
+    borderRadius: 18, padding: 18, zIndex: 9999,
   },
   closeBtn: {
-    position: 'absolute', top: 9, right: 9,
-    width: 17, height: 17, borderRadius: 99,
+    position: 'absolute', top: 11, right: 11,
+    width: 22, height: 22, borderRadius: 99,
     backgroundColor: 'rgba(255,255,255,0.08)',
     alignItems: 'center', justifyContent: 'center', zIndex: 1,
   },
-  diaryHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 9 },
-  diaryAvatar: { width: 26, height: 26, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
-  diaryName: { fontSize: 11, fontWeight: '500', color: 'rgba(255,255,255,0.9)' },
-  diaryDate: { fontSize: 9, color: 'rgba(255,255,255,0.35)' },
-  attrBadge: { paddingHorizontal: 7, paddingVertical: 2, borderRadius: 99 },
-  attrText: { fontSize: 9, fontWeight: '500' },
-  diaryText: {
-    fontSize: 10, lineHeight: 16.5, color: 'rgba(255,255,255,0.65)',
-    borderTopWidth: 0.5, borderTopColor: 'rgba(255,255,255,0.07)', paddingTop: 8,
+  diaryHeader: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 12 },
+  diaryAvatar: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
+  diaryName: { fontSize: 14, fontWeight: '500', color: 'rgba(255,255,255,0.92)' },
+  diaryDate: { fontSize: 11, color: 'rgba(255,255,255,0.4)' },
+  attrBadge: { paddingHorizontal: 10, paddingVertical: 3, borderRadius: 99 },
+  attrText: { fontSize: 11, fontWeight: '500' },
+  metaRow: {
+    flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 8,
+    marginBottom: 12,
   },
+  moodWrap: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  metaLabel: { fontSize: 11, color: 'rgba(255,255,255,0.45)' },
+  gemChip: { flexDirection: 'row', alignItems: 'center', gap: 5 },
+  gemText: { fontSize: 12, fontWeight: '500' },
+  emoPill: {
+    paddingHorizontal: 9, paddingVertical: 2, borderRadius: 99,
+    borderWidth: 0.5, backgroundColor: 'rgba(255,255,255,0.04)',
+  },
+  emoText: { fontSize: 10 },
+  diaryText: {
+    fontSize: 12, lineHeight: 20, color: 'rgba(255,255,255,0.78)',
+    borderTopWidth: 0.5, borderTopColor: 'rgba(255,255,255,0.08)', paddingTop: 12,
+  },
+  recallBtn: {
+    marginTop: 12, alignSelf: 'flex-end',
+    paddingHorizontal: 14, paddingVertical: 7,
+    backgroundColor: 'rgba(29,158,117,0.15)',
+    borderRadius: 99,
+    borderWidth: 0.5, borderColor: 'rgba(29,158,117,0.5)',
+  },
+  recallText: { fontSize: 12, color: '#5DCAA5', fontWeight: '500' },
 });

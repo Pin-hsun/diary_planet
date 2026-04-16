@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { StaticCreature } from "./Monsters";
+import { StaticGem, GEM_COLORS } from "./gem";
 
 // ── Constants ────────────────────────────────────────────────────────────────
 
@@ -270,12 +271,18 @@ function MonsterCard({ monster, selected, onToggleSelect, onToggleStar }) {
           : "#fff",
       }}>
         <div style={{
-          fontSize: 12, fontWeight: 500,
-          color: monster.deployed ? "#d0c8ff" : "#111",
-          whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
+          display: "flex", alignItems: "center", gap: 4,
           marginBottom: 2,
         }}>
-          {monster.name}
+          <span style={{
+            fontSize: 12, fontWeight: 500,
+            color: monster.deployed ? "#d0c8ff" : "#111",
+            whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
+            flex: 1, minWidth: 0,
+          }}>
+            {monster.name}
+          </span>
+          <StaticGem cat={monster.cat} size={18} />
         </div>
         <div style={{
           fontSize: 10,
@@ -659,9 +666,57 @@ export default function MonsterManager({
                   borderRadius: 10,
                   border: "0.5px solid rgba(0,0,0,0.08)",
                 }}>
-                  <div style={{ fontSize: 13, fontWeight: 500, color: "#111", marginBottom: 6 }}>
-                    {expanded.title ?? expanded.name}
+                  <div style={{
+                    display: "flex", alignItems: "center", justifyContent: "space-between",
+                    gap: 8, marginBottom: 8,
+                  }}>
+                    <span style={{ fontSize: 13, fontWeight: 500, color: "#111" }}>
+                      {expanded.title ?? expanded.name}
+                    </span>
+                    {expanded.gem && (
+                      <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                        <StaticGem cat={expanded.cat} size={22} />
+                        <span style={{
+                          fontSize: 12, fontWeight: 500,
+                          color: GEM_COLORS[expanded.cat]?.lo ?? "#111",
+                        }}>
+                          {expanded.gem}
+                        </span>
+                      </div>
+                    )}
                   </div>
+
+                  {(expanded.mood != null || expanded.emotions?.length) && (
+                    <div style={{
+                      display: "flex", alignItems: "center", gap: 10,
+                      flexWrap: "wrap", marginBottom: 8,
+                    }}>
+                      {expanded.mood != null && (
+                        <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 11, color: "#888" }}>
+                          <span>Mood</span>
+                          <div style={{ display: "flex", gap: 2 }}>
+                            {[1, 2, 3, 4, 5].map((n) => (
+                              <div key={n} style={{
+                                width: 6, height: 6, borderRadius: 3,
+                                background: n <= expanded.mood ? "#534AB7" : "rgba(0,0,0,0.15)",
+                              }} />
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      {expanded.emotions?.map((em) => (
+                        <span key={em} style={{
+                          padding: "2px 8px", borderRadius: 20,
+                          background: "rgba(83,74,183,0.08)",
+                          color: "#534AB7",
+                          fontSize: 10, fontWeight: 500,
+                        }}>
+                          {em}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+
                   <div style={{ fontSize: 12, lineHeight: 1.6, color: "#444" }}>
                     {expanded.diary}
                   </div>

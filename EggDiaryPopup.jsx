@@ -1,27 +1,13 @@
 import { useState, useEffect, useRef } from "react";
+import { GEMS, GEM_COLORS } from "./gem";
 
 // ── Data ──────────────────────────────────────────────────────────────────────
-
-const MINERALS = {
-  A: ["Humility", "Prudence", "Passion", "Openness", "Growth", "Rationality"],
-  B: ["Care", "Kindness", "Forgiveness", "Generosity", "Genuineness", "Faithfulness"],
-  C: ["Creativity", "Curiosity", "Judgement", "Bravery", "Perseverance", "Diligence"],
-  D: ["Beauty", "Gratitude", "Hope", "Spirituality", "Wisdom", "Justice"],
-};
 
 const CAT = {
   A: { label: "Self",         tc: "a" },
   B: { label: "Relation", tc: "b" },
   C: { label: "Achieve",  tc: "c" },
   D: { label: "Meaning",      tc: "d" },
-};
-
-const GEM_COLORS = {
-  null: { hi: "#D3D1C7", mid: "#888780", lo: "#444441" },
-  A:    { hi: "#CECBF6", mid: "#7F77DD", lo: "#3C3489" },
-  B:    { hi: "#F4C0D1", mid: "#D4537E", lo: "#72243E" },
-  C:    { hi: "#9FE1CB", mid: "#1D9E75", lo: "#085041" },
-  D:    { hi: "#FAC775", mid: "#BA7517", lo: "#633806" },
 };
 
 const TAG_STYLES = {
@@ -143,7 +129,7 @@ function SpinningGem({ selectedCat }) {
  * Props:
  *   egg        – { name: string, diary: string }
  *   onClose    – () => void
- *   onSend     – ({ mineral: { cat, value } | null, message: string }) => void
+ *   onSend     – ({ gem: { cat, value } | null, message: string }) => void
  */
 export default function EggDiaryPopup({ egg, onClose, onSend }) {
   const [filter,   setFilter]   = useState("all");
@@ -152,11 +138,11 @@ export default function EggDiaryPopup({ egg, onClose, onSend }) {
   const [message,  setMessage]  = useState("");
   const [toast,    setToast]    = useState(null);
 
-  // ── Filter minerals ────────────────────────────────────────────────────────
+  // ── Filter gems ────────────────────────────────────────────────────────
   const cats    = filter === "all" ? ["A", "B", "C", "D"] : [filter];
   const q       = query.toLowerCase();
   const visible = cats.flatMap((cat) =>
-    MINERALS[cat]
+    GEMS[cat]
       .filter((v) => !q || v.toLowerCase().includes(q))
       .map((v) => ({ cat, value: v }))
   );
@@ -170,14 +156,14 @@ export default function EggDiaryPopup({ egg, onClose, onSend }) {
   // ── Send ──────────────────────────────────────────────────────────────────
   const handleSend = () => {
     if (!selected && !message.trim()) {
-      showToast("Select a mineral or write a message");
+      showToast("Select a gem or write a message");
       return;
     }
     const parts = [];
     if (selected) parts.push(`Sent ${selected.value} ✦`);
     if (message.trim()) parts.push("Message sent");
     showToast(parts.join(" · "));
-    onSend?.({ mineral: selected, message: message.trim() });
+    onSend?.({ gem: selected, message: message.trim() });
     setSelected(null);
     setMessage("");
   };
@@ -215,12 +201,12 @@ export default function EggDiaryPopup({ egg, onClose, onSend }) {
         <div style={styles.gemArea}>
           <SpinningGem selectedCat={selected?.cat ?? null} />
           <div style={{ ...styles.gemLabel, color: labelCol }}>
-            {selected ? selected.value : "Choose a mineral"}
+            {selected ? selected.value : "Choose a gem"}
           </div>
         </div>
 
         {/* Section label */}
-        <div style={styles.secLabel}>Send a mineral</div>
+        <div style={styles.secLabel}>Send a gem</div>
 
         {/* Category tags */}
         <div style={styles.tagRow}>
@@ -246,10 +232,10 @@ export default function EggDiaryPopup({ egg, onClose, onSend }) {
           />
         </div>
 
-        {/* Mineral grid */}
+        {/* Gem grid */}
         <div style={styles.grid}>
           {visible.length === 0 ? (
-            <div style={styles.empty}>No minerals found</div>
+            <div style={styles.empty}>No gems found</div>
           ) : (
             visible.map(({ cat, value }) => {
               const isSel = selected?.cat === cat && selected?.value === value;

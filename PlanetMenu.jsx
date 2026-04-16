@@ -121,13 +121,11 @@ function HamburgerIcon({ open }) {
  * Props:
  *   activeKey         – string | null   currently active menu key
  *   onSelect          – (key: string) => void
- *   defaultLabel      – string          label shown when nothing is selected (default: "My Planet")
  *   style             – CSSProperties   extra styles for the wrapper (position it however you like)
  */
 export default function PlanetMenu({
   activeKey,
   onSelect,
-  defaultLabel = "My Planet",
   style,
 }) {
   const [open, setOpen] = useState(false);
@@ -144,7 +142,7 @@ export default function PlanetMenu({
   }, [open]);
 
   const currentItem = MENU_ITEMS.find((m) => m.key === activeKey);
-  const buttonLabel = currentItem?.label ?? defaultLabel;
+  const buttonLabel = currentItem?.label ?? "";
 
   const handleSelect = (key) => {
     onSelect?.(key);
@@ -170,14 +168,14 @@ export default function PlanetMenu({
         onMouseLeave={(e) => e.currentTarget.style.background = "rgba(20,10,50,0.75)"}
       >
         <HamburgerIcon open={open} />
-        <span style={{
+        {buttonLabel && <span style={{
           fontSize: 13, fontWeight: 500,
           color: "rgba(210,190,255,0.9)",
           fontFamily: "inherit",
           userSelect: "none",
         }}>
           {buttonLabel}
-        </span>
+        </span>}
       </button>
 
       {/* Dropdown */}
