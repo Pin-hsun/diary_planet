@@ -1,0 +1,68 @@
+[
+  {
+    "id": "lumie",
+    "name": "Lumie",
+    "color": "#9b6fd4",
+    "torsoColor": "#7a4fb0",
+    "attr": "A · Self",
+    "attrBg": "#2a1550",
+    "attrColor": "#d4aaff",
+    "date": "Apr 3, 2026",
+    "diary": "Today I sat by the window for a long time. The rain made everything slower. I realized I've been running from something I can't name yet — but today felt like the first breath after."
+  },
+  {
+    "id": "zorb",
+    "name": "Zorb",
+    "color": "#4a9fd4",
+    "torsoColor": "#2a7fb0",
+    "attr": "B · Relation",
+    "attrBg": "#0a2035",
+    "attrColor": "#7ad4ff",
+    "date": "Apr 7, 2026",
+    "diary": "Called my mom after two months of silence. We talked about small things — her garden, my coffee habits. Neither of us mentioned the argument. Maybe that was enough for now."
+  },
+  {
+    "id": "miko",
+    "name": "Miko",
+    "color": "#d4934a",
+    "torsoColor": "#b07030",
+    "attr": "C · Achieve",
+    "attrBg": "#351800",
+    "attrColor": "#ffc47a",
+    "date": "Apr 10, 2026",
+    "diary": "Finished the project I'd been avoiding for three weeks. It wasn't perfect but I sent it anyway. The relief wasn't pride exactly — more like setting down something heavy I forgot I was carrying."
+  },
+  {
+    "id": "fenra",
+    "name": "Fenra",
+    "color": "#4dc47a",
+    "torsoColor": "#2da05a",
+    "attr": "D · Meaning",
+    "attrBg": "#0a2518",
+    "attrColor": "#7affc4",
+    "date": "Apr 12, 2026",
+    "diary": "Watched a documentary about tide pools. Those tiny creatures just exist, completely absorbed in their small world. I felt less alone somehow. Like meaning doesn't have to be enormous."
+  },
+  {
+    "id": "glim",
+    "name": "Glim",
+    "color": "#d45a8a",
+    "torsoColor": "#b03a6a",
+    "attr": "A · Self",
+    "attrBg": "#2a0a1a",
+    "attrColor": "#ffaadd",
+    "date": "Apr 13, 2026",
+    "diary": "I danced alone in my room to a song I haven't heard in years. My body remembered the words before my mind did. Some part of me from ten years ago was still there, still dancing."
+  },
+  {
+    "id": "nori",
+    "name": "Nori",
+    "color": "#4dd4c4",
+    "torsoColor": "#2da094",
+    "attr": "B · Relation",
+    "attrBg": "#0a2520",
+    "attrColor": "#7affec",
+    "date": "Apr 14, 2026",
+    "diary": "Had lunch with an old coworker I hadn't seen in a year. We picked up mid-sentence, like the gap hadn't happened. Some friendships don't need constant tending — they just wait patiently."
+  }
+]
