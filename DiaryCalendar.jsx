@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { StaticCreature, EggIcon } from "./Monsters";
-import { getAttrStyle, attrToCat, StaticGem } from "./gem";
+import { getAttrStyle, attrToCat, StaticGem, GEM_COLORS } from "./gem";
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -9,10 +9,6 @@ const MONTHS_FULL = ["January","February","March","April","May","June",
                      "July","August","September","October","November","December"];
 const MONTHS_SHORT = ["Jan","Feb","Mar","Apr","May","Jun",
                       "Jul","Aug","Sep","Oct","Nov","Dec"];
-
-// mood 1–5
-const MOOD_DOTS  = ["","#F7C1C1","#CECBF6","#B5D4F4","#9FE1CB","#FAC775"];
-const MOOD_LABELS = ["","Tough","Uneasy","Neutral","Good","Great"];
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -51,9 +47,8 @@ function MonsterFace({ color, torsoColor, size = 36 }) {
 // ── Bottom sheet ──────────────────────────────────────────────────────────────
 
 function DiarySheet({ entry, onClose }) {
-  const moodDot   = MOOD_DOTS[entry.mood]   ?? "#B5D4F4";
-  const moodLabel = MOOD_LABELS[entry.mood] ?? "";
   const attrStyle = getAttrStyle(entry.attr);
+  const gemCol    = GEM_COLORS[attrToCat(entry.attr)] ?? GEM_COLORS.null;
 
   return (
     <>
@@ -97,18 +92,21 @@ function DiarySheet({ entry, onClose }) {
             <div style={{ fontSize:15, fontWeight:500, color:"rgba(225,215,255,0.95)", marginBottom:4 }}>
               {entry.name}
             </div>
-            <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-              <span style={{ fontSize:12, color:"rgba(160,145,200,0.5)" }}>{entry.date}</span>
-              <div style={{ display:"flex", alignItems:"center", gap:4 }}>
-                <div style={{ width:6, height:6, borderRadius:"50%", background:moodDot }} />
-                <span style={{ fontSize:11, color:"rgba(160,145,200,0.5)" }}>{moodLabel}</span>
-              </div>
-            </div>
+            <span style={{ fontSize:12, color:"rgba(160,145,200,0.5)" }}>{entry.date}</span>
           </div>
 
           <div style={{
-            display:"flex", flexDirection:"column", alignItems:"flex-end", gap:5, flexShrink:0,
+            display:"flex", alignItems:"center", gap:5, flexShrink:0,
           }}>
+            {entry.attr && (
+              <span style={{
+                fontSize:10, padding:"2px 8px", borderRadius:20,
+                background: attrStyle.bg, color: attrStyle.color,
+                border:`0.5px solid ${attrStyle.color}44`,
+              }}>
+                {entry.attr}
+              </span>
+            )}
             {entry.gem && (
               <span style={{
                 fontSize:11, padding:"3px 10px 3px 6px", borderRadius:20,
@@ -121,13 +119,6 @@ function DiarySheet({ entry, onClose }) {
                 {entry.gem}
               </span>
             )}
-            <span style={{
-              fontSize:10, padding:"2px 8px", borderRadius:20,
-              background: attrStyle.bg, color: attrStyle.color,
-              border:`0.5px solid ${attrStyle.color}44`,
-            }}>
-              {entry.attr}
-            </span>
           </div>
 
           <button onClick={onClose} style={{
@@ -334,7 +325,7 @@ export default function DiaryCalendar({ diaries = SAMPLE_DIARIES, style }) {
             <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
               {monthDiaries.map(entry => {
                 const isActive = selected === entry.id;
-                const moodDot  = MOOD_DOTS[entry.mood] ?? "#B5D4F4";
+                const gemCol = GEM_COLORS[attrToCat(entry.attr)] ?? GEM_COLORS.null;
                 return (
                   <button
                     key={entry.id}
@@ -404,7 +395,16 @@ export default function DiaryCalendar({ diaries = SAMPLE_DIARIES, style }) {
                       );
                     })()}
 
-                    <div style={{ width:8, height:8, borderRadius:"50%", background:moodDot, flexShrink:0 }} />
+                    {entry.mood != null && (
+                      <div style={{ display:"flex", gap:2, flexShrink:0 }}>
+                        {[1,2,3,4,5].map(n => (
+                          <div key={n} style={{
+                            width:5, height:5, borderRadius:3,
+                            background: n <= entry.mood ? gemCol.mid : "rgba(255,255,255,0.15)",
+                          }} />
+                        ))}
+                      </div>
+                    )}
                   </button>
                 );
               })}
