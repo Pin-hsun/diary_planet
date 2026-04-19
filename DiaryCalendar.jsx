@@ -1,14 +1,7 @@
 import { useState } from "react";
 import { StaticCreature, EggIcon } from "./Monsters";
 import { getAttrStyle, attrToCat, StaticGem, GEM_COLORS } from "./gem";
-
-// ── Constants ─────────────────────────────────────────────────────────────────
-
-const DAYS_SHORT = ["S","M","T","W","T","F","S"];
-const MONTHS_FULL = ["January","February","March","April","May","June",
-                     "July","August","September","October","November","December"];
-const MONTHS_SHORT = ["Jan","Feb","Mar","Apr","May","Jun",
-                      "Jul","Aug","Sep","Oct","Nov","Dec"];
+import { DAYS_SHORT, MONTHS_FULL, MONTHS_SHORT } from "./constants";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 

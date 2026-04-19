@@ -2,12 +2,11 @@ import React, { useState } from 'react';
 import { View, SafeAreaView, ScrollView } from 'react-native';
 import PlanetScreen from './PlanetScreen';
 import DiaryCalendar from './DiaryCalendar';
+import WriteDiary2 from './WriteDiary2';
 import BottomNav from './BottomNav';
 import MONSTERS from './monsters.json';
 import DIARIES from './diaries.json';
-
-const ATTR_LABEL = { A: 'Self', B: 'Relation', C: 'Achieve', D: 'Meaning' };
-const MONTHS_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+import { MONTHS_SHORT, ATTR_LABEL } from './constants';
 
 function fmtDate(iso) {
   const d = new Date(iso);
@@ -81,11 +80,14 @@ export default function Home() {
             <DiaryCalendar diaries={calendarDiaries} />
           </ScrollView>
         )}
+        {navKey === 'write' && (
+          <WriteDiary2 />
+        )}
       </View>
       <BottomNav
         activeKey={navKey}
         onSelect={setNavKey}
-        onWriteDiary={() => { /* TODO */ }}
+        onWriteDiary={() => setNavKey('write')}
       />
     </SafeAreaView>
   );

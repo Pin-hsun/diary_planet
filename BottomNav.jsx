@@ -5,12 +5,10 @@ export default function BottomNav({ activeKey, onSelect, onWriteDiary }) {
   return (
     <View style={styles.bottomNav}>
       <NavItem label="planet" activeKey={activeKey} onSelect={onSelect} />
-      <NavItem label="calendar" activeKey={activeKey} onSelect={onSelect} />
       <TouchableOpacity style={styles.writeBtn} onPress={onWriteDiary}>
         <Text style={{ color: 'white', fontSize: 18 }}>✎</Text>
       </TouchableOpacity>
-      <NavItem label="profile" activeKey={activeKey} onSelect={onSelect} />
-      <NavItem label="bag" activeKey={activeKey} onSelect={onSelect} />
+      <NavItem label="calendar" activeKey={activeKey} onSelect={onSelect} />
     </View>
   );
 }

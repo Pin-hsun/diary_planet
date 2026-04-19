@@ -1,7 +1,6 @@
 import { useState } from "react";
 import DIARIES from "./diaries.json";
-
-const MONTHS_SHORT = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+import { MONTHS_SHORT } from "./constants";
 
 const COLOR_NOT_SENT = { outer: "#D3D1C7", inner: "#F1EFE8", spot: "#D3D1C7" };
 const COLOR_DRIFTING = { outer: "#B5D4F4", inner: "#E6F1FB", spot: "#B5D4F4" };
