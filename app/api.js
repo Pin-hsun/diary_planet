@@ -1,4 +1,4 @@
-const BASE = "http://localhost:8000";
+const BASE = "https://diary-planet.onrender.com";
 
 async function request(path, opts = {}) {
   const res = await fetch(`${BASE}${path}`, {
